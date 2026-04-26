@@ -83,11 +83,9 @@ def _pick_adapter(req: AnalyzeRequest) -> Tuple[DataSourceAdapter, str | None]:
     operation_id="analyzeHotTopics",
     summary="Analyze competitor flooring hot topics via Semrush",
     description=(
-        "Given competitor domains (and a `user_token` when the server is in "
-        "BYOK mode), calls Semrush via the user's own key, clusters the "
-        "returned pages and keywords into flooring-industry topics, and "
-        "returns a ranked list of hot topics with explainable scores plus "
-        "suggested Blog / LinkedIn / cold-email angles."
+        "Given competitor domains and a BYOK `user_token`, calls Semrush, "
+        "clusters returned pages/keywords into flooring topics, returns a "
+        "ranked list with explainable scores + Blog/LinkedIn/email angles."
     ),
 )
 async def analyze(
