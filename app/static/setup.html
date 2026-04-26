@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Flooring Hotspot GPT — 衣帽间 / Setup</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", system-ui, sans-serif;
+      max-width: 640px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.55;
+      color: #222;
+      background: #fafafa;
+    }
+    h1 { font-size: 22px; margin-bottom: 6px; }
+    h2 { font-size: 16px; margin-top: 28px; }
+    p.lead { color: #555; margin-top: 0; }
+    .card {
+      background: #fff;
+      border: 1px solid #e3e3e3;
+      border-radius: 12px;
+      padding: 22px;
+      margin: 18px 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    label { display: block; font-weight: 600; margin: 14px 0 6px; font-size: 14px; }
+    input[type=text], input[type=password], input[type=number] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    .hint { color: #888; font-size: 12px; margin-top: 4px; }
+    button {
+      background: #111;
+      color: #fff;
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 18px;
+    }
+    button:hover { background: #333; }
+    button.secondary { background: #fff; color: #111; border: 1px solid #ccc; }
+    .token-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 22px;
+      letter-spacing: 1px;
+      background: #f4f4f0;
+      border: 2px dashed #aaa;
+      padding: 16px;
+      border-radius: 10px;
+      text-align: center;
+      margin: 14px 0;
+      user-select: all;
+    }
+    .ok { color: #1b7a3a; }
+    .err { color: #b00; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .row > * { flex: 1; min-width: 120px; }
+    pre.copyable {
+      background: #f4f4f0;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .step { color: #888; font-weight: normal; }
+  </style>
+</head>
+<body>
+
+<h1>🧥 Flooring Hotspot GPT — 衣帽间</h1>
+<p class="lead">用你自己的 Semrush API Key,换一个可以塞进 ChatGPT 的「访问码」。Semrush key 加密存在我们的服务器,从不进入聊天记录。</p>
+
+<div id="step1" class="card">
+  <h2><span class="step">第 1 步</span> &nbsp; 寄存你的 Semrush API Key</h2>
+
+  <label for="label">昵称(自己看的,随便写)</label>
+  <input id="label" type="text" placeholder="例如:我的销售工作号">
+
+  <label for="apikey">Semrush API Key</label>
+  <input id="apikey" type="password" placeholder="在 Semrush 后台 → Subscription info → API 找到">
+  <div class="hint">通常以 <code>sm_</code> 开头。我们会在提交时做一次最便宜的真实调用(约 10 units)来确认 key 可用。</div>
+
+  <details style="margin-top:12px">
+    <summary style="cursor:pointer;font-size:13px;color:#555">高级:自定义配额</summary>
+    <div class="row">
+      <div>
+        <label for="dq">每天上限</label>
+        <input id="dq" type="number" placeholder="留空 = 默认 50">
+      </div>
+      <div>
+        <label for="mq">每月上限</label>
+        <input id="mq" type="number" placeholder="留空 = 默认 800">
+      </div>
+    </div>
+  </details>
+
+  <button id="submitBtn" onclick="register()">寄存 Key,生成访问码</button>
+  <div id="error" class="err" style="margin-top:10px"></div>
+</div>
+
+<div id="step2" class="card" style="display:none">
+  <h2 class="ok"><span class="step">第 2 步</span> &nbsp; ✓ 这是你的访问码</h2>
+  <div class="token-box" id="tokenOut"></div>
+  <button class="secondary" onclick="copyToken()">复制</button>
+  <p style="margin-top:18px"><strong>把它存好</strong>。每次在 ChatGPT 里和 Flooring Hotspot GPT 开新会话时,先告诉它这串码:</p>
+  <pre class="copyable" id="chatLine">我的访问码是 floor-XXXX-XXXX,接下来分析 shaw.com、mohawkflooring.com 的 commercial flooring 热点</pre>
+
+  <p>访问码要换 / 不想用了?<a href="#" onclick="resetForm();return false">回上一步重新寄存</a> 或 <a href="#" onclick="revoke();return false">作废这串</a>。</p>
+
+  <details style="margin-top:14px">
+    <summary style="cursor:pointer;font-size:13px;color:#555">查询用量</summary>
+    <button class="secondary" style="margin-top:8px" onclick="checkUsage()">刷新用量</button>
+    <pre id="usageOut" class="copyable"></pre>
+  </details>
+</div>
+
+<div class="card">
+  <h2>常见问题</h2>
+  <p><strong>访问码会被别人盗用吗?</strong> 它本身就是「凭证」,所以请像对待密码一样对待它。如果你怀疑泄露了,回到本页面重新生成,旧码会自动废掉(限频也能挡住一部分滥用)。</p>
+  <p><strong>Semrush key 存在哪里?</strong> 加密(Fernet AES-128)存在服务器的 SQLite 里。明文从不写日志。即使数据库被偷,没有 <code>KEY_ENCRYPTION_SECRET</code> 也解不开。</p>
+  <p><strong>用量怎么算?</strong> 每次 GPT 调一次 <code>analyzeHotTopics</code> 就是 1 次。一次调用大约消耗 5,000 Semrush API units(默认上限 50 页 + 200 关键词)。</p>
+</div>
+
+<script>
+  let lastToken = "";
+
+  async function register() {
+    const btn = document.getElementById("submitBtn");
+    const err = document.getElementById("error");
+    err.textContent = "";
+    btn.disabled = true;
+    btn.textContent = "验证中…";
+
+    const body = {
+      semrush_api_key: document.getElementById("apikey").value.trim(),
+      label: document.getElementById("label").value.trim() || "未命名",
+    };
+    const dq = document.getElementById("dq").value.trim();
+    const mq = document.getElementById("mq").value.trim();
+    if (dq) body.daily_quota = parseInt(dq, 10);
+    if (mq) body.monthly_quota = parseInt(mq, 10);
+
+    try {
+      const r = await fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const j = await r.json();
+      if (!r.ok) {
+        err.textContent = j.detail || ("HTTP " + r.status);
+        return;
+      }
+      lastToken = j.user_token;
+      document.getElementById("tokenOut").textContent = j.user_token;
+      document.getElementById("chatLine").textContent =
+        "我的访问码是 " + j.user_token +
+        ",接下来分析 shaw.com、mohawkflooring.com 的 commercial flooring 热点";
+      document.getElementById("step1").style.display = "none";
+      document.getElementById("step2").style.display = "block";
+    } catch (e) {
+      err.textContent = String(e);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "寄存 Key,生成访问码";
+    }
+  }
+
+  function copyToken() {
+    if (!lastToken) return;
+    navigator.clipboard.writeText(lastToken);
+  }
+
+  function resetForm() {
+    document.getElementById("apikey").value = "";
+    document.getElementById("step2").style.display = "none";
+    document.getElementById("step1").style.display = "block";
+  }
+
+  async function revoke() {
+    if (!lastToken) return;
+    if (!confirm("确认作废 " + lastToken + "?")) return;
+    const r = await fetch("/revoke", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_token: lastToken }),
+    });
+    const j = await r.json();
+    alert(j.revoked ? "已作废,可以重新寄存。" : "作废失败 — 也许已经被作废过?");
+    if (j.revoked) resetForm();
+  }
+
+  async function checkUsage() {
+    if (!lastToken) return;
+    const r = await fetch("/usage/" + encodeURIComponent(lastToken));
+    const j = await r.json();
+    document.getElementById("usageOut").textContent = JSON.stringify(j, null, 2);
+  }
+</script>
+
+</body>
+</html>

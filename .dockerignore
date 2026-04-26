@@ -1,0 +1,17 @@
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.env
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+exports/
+node_modules
+.DS_Store
+README.md
+DEPLOY.md

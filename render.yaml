@@ -1,0 +1,35 @@
+# Render.com blueprint — push this repo to GitHub, then click
+# "New + → Blueprint" on Render and point at it.
+#
+# A persistent disk is required so SQLite + exports survive restarts.
+services:
+  - type: web
+    name: flooring-hotspot-gpt
+    runtime: docker
+    plan: starter        # $7/mo — enough for SQLite + ~100 users
+    region: oregon
+    healthCheckPath: /health
+    autoDeploy: true
+    disk:
+      name: byok-disk
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: API_BEARER_TOKEN
+        generateValue: true                  # Render auto-generates a strong value
+      - key: DATA_SOURCE_MODE
+        value: byok
+      - key: DATABASE_PATH
+        value: /data/byok.db
+      - key: EXPORT_DIR
+        value: /data/exports
+      - key: KEY_ENCRYPTION_SECRET
+        sync: false                          # YOU paste this in the Render dashboard
+      - key: DEFAULT_DAILY_QUOTA
+        value: 50
+      - key: DEFAULT_MONTHLY_QUOTA
+        value: 800
+      - key: VALIDATE_SEMRUSH_ON_REGISTER
+        value: true
+      - key: PUBLIC_BASE_URL
+        sync: false                          # set after first deploy: https://<service>.onrender.com

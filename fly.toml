@@ -1,0 +1,38 @@
+# Fly.io config — `fly launch --no-deploy && fly deploy`
+# Works on the free tier as long as you stay under the free allowance.
+
+app = "flooring-hotspot-gpt"           # change to a globally unique name
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  DATA_SOURCE_MODE = "byok"
+  DATABASE_PATH = "/data/byok.db"
+  EXPORT_DIR = "/data/exports"
+  DEFAULT_DAILY_QUOTA = "50"
+  DEFAULT_MONTHLY_QUOTA = "800"
+  VALIDATE_SEMRUSH_ON_REGISTER = "true"
+  # PUBLIC_BASE_URL is set after first deploy with:
+  #   fly secrets set PUBLIC_BASE_URL=https://flooring-hotspot-gpt.fly.dev
+  # API_BEARER_TOKEN and KEY_ENCRYPTION_SECRET — set with `fly secrets set`
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.checks]
+    [http_service.checks.health]
+      grace_period = "10s"
+      interval = "30s"
+      method = "GET"
+      path = "/health"
+      timeout = "5s"
+
+[mounts]
+  source = "byok_data"
+  destination = "/data"
